@@ -1,6 +1,7 @@
 # nothern-project
 
 This template should help get you started developing with Vue 3 in Vite.
+## This is nothern-project, was creaeted by Kudinov_PO the student of group 605-51.
 
 ## Recommended IDE Setup
 
