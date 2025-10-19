@@ -1,56 +1,110 @@
 <template>
-  <div class="items-container">
-    <!-- Управление и статусы -->
-    <div class="controls">
-      <button @click="fetchItems" :disabled="loading">
-        {{ loading ? 'Загрузка...' : 'Обновить' }}
-      </button>
-      <button @click="clearError" v-if="errorMessage">
-        Очистить ошибку
-      </button>
-    </div>
-
-    <!-- Статусы -->
-    <div v-if="loading" class="loading">
-      Загрузка товаров...
-    </div>
-
-    <div v-else-if="errorMessage" class="error">
-      {{ errorMessage }}
-      <button @click="fetchItems" class="retry-btn">Повторить</button>
-    </div>
-
-    <!-- Таблица товаров -->
-    <div v-else class="table-container">
-      <div class="table-header">
-        <h2>Товары</h2>
-        <span class="count">Всего: {{ itemsCount }}</span>
+  <div class="min-h-screen bg-gradient-to-br from-amber-50 to-yellow-50 py-8 px-4">
+    <div class="max-w-7xl mx-auto">
+      <!-- Заголовок страницы -->
+      <div class="mb-8 text-center">
+        <h1 class="text-4xl font-bold text-blue-900 mb-4">Товары</h1>
+        <p class="text-xl text-gray-700">Управление ассортиментом handmade изделий</p>
       </div>
 
-      <table class="items-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Название</th>
-            <th>ID категории</th>
-            <th>Вкусы/Ароматы</th>
-            <th>Описание</th>
-            <th>Цена</th>
-            <th>Количество</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="item in items" :key="item.id">
-            <td class="id-column">{{ item.id }}</td>
-            <td class="name-column">{{ item.name }}</td>
-            <td class="category-id-column">{{ item.category_id }}</td>
-            <td class="tastes-column">{{ item.tastes }}</td>
-            <td class="description-column">{{ item.description }}</td>
-            <td class="price-column">{{ item.price }} ₽</td>
-            <td class="quantity-column">{{ item.quantity }}</td>
-          </tr>
-        </tbody>
-      </table>
+      <!-- Управление и статусы -->
+      <div class="controls mb-8">
+        <Button
+          @click="fetchItems"
+          :disabled="loading"
+          class="control-btn refresh-btn"
+          :label="loading ? 'Загрузка...' : 'Обновить'"
+        />
+        <Button
+          @click="clearError"
+          v-if="errorMessage"
+          class="control-btn clear-btn"
+          label="Очистить ошибку"
+        />
+      </div>
+
+      <!-- Статусы -->
+      <div v-if="loading" class="status-card loading-card">
+        <i class="pi pi-spin pi-spinner text-2xl mb-4"></i>
+        <p>Загрузка товаров...</p>
+      </div>
+
+      <div v-else-if="errorMessage" class="status-card error-card">
+        <i class="pi pi-exclamation-triangle text-2xl mb-4"></i>
+        <p class="mb-4">{{ errorMessage }}</p>
+        <Button
+          @click="fetchItems"
+          class="retry-btn"
+          label="Повторить"
+        />
+      </div>
+
+      <!-- Таблица товаров -->
+      <div v-else class="table-container">
+        <div class="table-header">
+          <h2 class="text-2xl font-bold text-blue-900">Список товаров</h2>
+          <div class="count-badge">
+            <i class="pi pi-box mr-2"></i>
+            Всего: {{ itemsCount }}
+          </div>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="items-table">
+            <thead>
+              <tr>
+                <th class="id-column">ID</th>
+                <th class="name-column">Название</th>
+                <th class="category-column">Категория</th>
+                <th class="tastes-column">Ароматы</th>
+                <th class="description-column">Описание</th>
+                <th class="price-column">Цена</th>
+                <th class="quantity-column">Количество</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="item in items" :key="item.id" class="table-row">
+                <td class="id-column">
+                  <span class="id-badge">{{ item.id }}</span>
+                </td>
+                <td class="name-column">
+                  <div class="name-content">
+                    <i class="pi pi-tag mr-2 text-amber-600"></i>
+                    {{ item.name }}
+                  </div>
+                </td>
+                <td class="category-column">
+                  <span class="category-badge">{{ item.category_id }}</span>
+                </td>
+                <td class="tastes-column">
+                  <div class="tastes-content">
+                    <i class="pi pi-leaf mr-2 text-green-600"></i>
+                    {{ item.tastes }}
+                  </div>
+                </td>
+                <td class="description-column">
+                  <p class="description-text">{{ item.description }}</p>
+                </td>
+                <td class="price-column">
+                  <span class="price-tag">{{ item.price }} ₽</span>
+                </td>
+                <td class="quantity-column">
+                  <span class="quantity-badge" :class="{ 'low-stock': item.quantity < 10 }">
+                    {{ item.quantity }} шт.
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Пустое состояние -->
+        <div v-if="itemsCount === 0" class="empty-state">
+          <i class="pi pi-inbox text-4xl text-gray-400 mb-4"></i>
+          <h3 class="text-xl font-semibold text-gray-600 mb-2">Товаров пока нет</h3>
+          <p class="text-gray-500">Добавьте первый товар в ваш магазин</p>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -59,10 +113,10 @@
 import { useItemsStore } from '@/stores/itemsStore';
 import { storeToRefs } from 'pinia';
 import { onMounted } from 'vue';
+import Button from 'primevue/button';
 
 const itemsStore = useItemsStore();
 
-// Используем storeToRefs для сохранения реактивности
 const {
     items,
     loading,
@@ -72,7 +126,6 @@ const {
 
 const itemsCount = getItemsCount;
 
-// Actions
 const {
     fetchItems,
     clearError
@@ -84,189 +137,263 @@ onMounted((): void => {
 </script>
 
 <style scoped>
-.items-container {
-  max-width: 1600px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
 .controls {
-  margin-bottom: 20px;
   display: flex;
-  gap: 10px;
+  gap: 12px;
+  justify-content: center;
 }
 
-.controls button {
-  padding: 8px 16px;
-  border: 1px solid #ddd;
-  background: white;
-  border-radius: 4px;
-  cursor: pointer;
+.control-btn {
+  border: none !important;
+  font-weight: 600 !important;
+  padding: 0.75rem 1.5rem !important;
 }
 
-.controls button:hover:not(:disabled) {
-  background: #f5f5f5;
+.refresh-btn {
+  background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%) !important;
+  color: white !important;
 }
 
-.controls button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+.refresh-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #3730a3 0%, #4f46e5 100%) !important;
 }
 
-.loading, .error {
-  text-align: center;
-  padding: 40px;
-  font-size: 18px;
+.clear-btn {
+  background: #f59e0b !important;
+  color: #1e3a8a !important;
 }
 
-.error {
-  color: #e74c3c;
+.clear-btn:hover {
+  background: #eab308 !important;
+}
+
+.status-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  justify-content: center;
+  padding: 3rem;
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+}
+
+.loading-card {
+  color: #1e3a8a;
+}
+
+.error-card {
+  color: #dc2626;
 }
 
 .retry-btn {
-  padding: 8px 16px;
-  background: #e74c3c;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
+  background: #dc2626 !important;
+  border: none !important;
+  color: white !important;
 }
 
 .retry-btn:hover {
-  background: #c0392b;
+  background: #b91c1c !important;
+}
+
+.table-container {
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
 }
 
 .table-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  padding: 1.5rem 2rem;
+  background: #f8fafc;
+  border-bottom: 1px solid #e5e7eb;
 }
 
-.count {
-  color: #666;
-  font-size: 14px;
+.count-badge {
+  display: flex;
+  align-items: center;
+  background: #1e3a8a;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 2rem;
+  font-weight: 600;
+  font-size: 0.875rem;
 }
 
-.table-container {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
+.table-wrapper {
+  overflow-x: auto;
 }
 
 .items-table {
   width: 100%;
   border-collapse: collapse;
-  font-family: Arial, sans-serif;
+  font-family: inherit;
 }
 
 .items-table th {
-  background: #4a5568;
+  background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%);
   color: white;
-  padding: 15px;
+  padding: 1rem 1.5rem;
   text-align: left;
   font-weight: 600;
-  font-size: 14px;
-  border-bottom: 2px solid #2d3748;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .items-table td {
-  padding: 15px;
-  border-bottom: 1px solid #e2e8f0;
-  color: #2d3748;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #f1f5f9;
+  color: #374151;
   vertical-align: top;
-  font-size: 14px;
 }
 
-.items-table tr:hover {
-  background: #f7fafc;
+.table-row:hover {
+  background: #f8fafc;
 }
 
-.items-table tr:last-child td {
+.table-row:last-child td {
   border-bottom: none;
 }
 
 .id-column {
-  width: 60px;
+  width: 80px;
+}
+
+.id-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #f1f5f9;
+  color: #475569;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
   font-weight: 600;
-  color: #4a5568;
-  text-align: center;
+  font-size: 0.75rem;
 }
 
 .name-column {
-  width: 180px;
-  font-weight: 600;
-  color: #2d3748;
+  width: 200px;
+  min-width: 180px;
 }
 
-.category-id-column {
-  width: 100px;
-  text-align: center;
-  color: #718096;
+.name-content {
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  color: #1e3a8a;
+}
+
+.category-column {
+  width: 120px;
+}
+
+.category-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #fef3c7;
+  color: #92400e;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-weight: 500;
+  font-size: 0.75rem;
 }
 
 .tastes-column {
   width: 200px;
-  color: #4a5568;
-  line-height: 1.4;
+  min-width: 180px;
+}
+
+.tastes-content {
+  display: flex;
+  align-items: center;
+  color: #065f46;
 }
 
 .description-column {
   width: 400px;
-  color: #4a5568;
+  min-width: 300px;
+}
+
+.description-text {
+  color: #6b7280;
   line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .price-column {
-  width: 100px;
-  font-weight: 600;
-  color: #2d3748;
+  width: 120px;
   text-align: right;
 }
 
-.quantity-column {
-  width: 100px;
-  text-align: center;
-  font-weight: 600;
-  color: #2d3748;
+.price-tag {
+  font-weight: 700;
+  color: #059669;
+  font-size: 1.125rem;
 }
 
-@media (max-width: 1200px) {
-  .items-container {
-    padding: 10px;
+.quantity-column {
+  width: 120px;
+  text-align: center;
+}
+
+.quantity-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #d1fae5;
+  color: #065f46;
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.quantity-badge.low-stock {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  color: #6b7280;
+}
+
+@media (max-width: 1024px) {
+  .table-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
   }
 
   .items-table th,
   .items-table td {
-    padding: 12px 8px;
-    font-size: 13px;
-  }
-
-  .name-column {
-    width: 150px;
-  }
-
-  .tastes-column {
-    width: 150px;
-  }
-
-  .description-column {
-    width: 300px;
+    padding: 0.75rem 1rem;
   }
 }
 
 @media (max-width: 768px) {
-  .table-container {
-    overflow-x: auto;
+  .controls {
+    flex-direction: column;
+    align-items: center;
   }
 
-  .items-table {
-    min-width: 1000px;
+  .control-btn {
+    width: 100%;
+    max-width: 200px;
   }
 }
 </style>

@@ -1,0 +1,11 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+.custom-menubar-gradient {
+  background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%);
+}
+
+.bg-custom-cream {
+  background: linear-gradient(135deg, #fef7ed 0%, #fef3c7 100%);
+}

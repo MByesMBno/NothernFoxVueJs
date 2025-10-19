@@ -81,9 +81,9 @@ export const useAuthStore = defineStore('auth', {
 
         initializeAuth(): void {
             if (this.token) {
-                // Здесь можно добавить проверку валидности токена
+
                 this.isAuthenticated = true;
-                // Опционально: загрузить данные пользователя по токену
+
             }
         },
 
