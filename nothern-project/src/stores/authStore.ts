@@ -6,7 +6,6 @@ interface User {
     id: number;
     email: string;
     name: string;
-    // Добавьте другие поля пользователя по необходимости
 }
 
 interface LoginCredentials {
