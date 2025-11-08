@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import axios from 'axios';
 import type { AxiosResponse } from 'axios';
-
+const backendUrl = import.meta.env.VITE_BACKEND_URL;
 interface User {
     id: number;
     email: string;
@@ -45,7 +45,7 @@ export const useAuthStore = defineStore('auth', {
             this.errorMessage = "";
             try {
                 const response: AxiosResponse<LoginResponse> = await axios.post(
-                    'http://127.0.0.1:8000/api/login',
+                    backendUrl + '/login',
                     credentials
                 );
 
@@ -56,15 +56,15 @@ export const useAuthStore = defineStore('auth', {
 
             } catch (error: any) {
                 if (error.response) {
-                    // Сервер ответил с кодом статуса вне диапазона 2xx
+
                     this.errorMessage = error.response.data.message || 'Ошибка авторизации';
                     console.error('Login error:', error.response.data);
                 } else if (error.request) {
-                    // Запрос был сделан, но ответ не получен
+
                     this.errorMessage = 'Сервер не отвечает. Проверьте подключение к интернету.';
                     console.error('Network error:', error.message);
                 } else {
-                    // Произошла ошибка при настройке запроса
+
                     this.errorMessage = 'Произошла непредвиденная ошибка';
                     console.error('Request setup error:', error.message);
                 }

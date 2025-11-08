@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-amber-50 to-yellow-50">
-    <!-- Хедер -->
+
     <Menubar :model="items" class="custom-menubar">
       <template #start>
         <span class="text-xl font-bold text-white ml-4">Северный лис</span>
@@ -26,7 +26,7 @@
       </template>
     </Menubar>
 
-    <!-- Контент страниц -->
+
     <router-view></router-view>
   </div>
 </template>
@@ -56,6 +56,11 @@ const items = ref([
     label: 'Товары',
     icon: 'pi pi-box',
     command: () => navigateTo('/items')
+  },
+  {
+    label: 'Создание категорий',
+    icon: 'pi pi-box',
+    command: () => navigateTo('/createCat')
   }
 ]);
 

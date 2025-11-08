@@ -1,72 +1,124 @@
 import { defineStore } from 'pinia';
 import axios from 'axios';
 import type { AxiosResponse } from 'axios';
-
+const backendUrl = import.meta.env.VITE_BACKEND_URL;
 interface Item {
     id: number;
     name: string;
-    category_id: number;
-    tastes: string;
     description: string;
-    price: string;
-    quantity: number;
+    price: number;
+    category_id: number;
+    created_at: string;
+    updated_at: string;
 }
 
-interface ItemsState {
+interface PaginationInfo {
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+}
+
+interface ItemState {
     items: Item[];
     loading: boolean;
     errorMessage: string;
+    pagination: PaginationInfo;
 }
 
-export const useItemsStore = defineStore('items', {
-    state: (): ItemsState => ({
+export const useItemStore = defineStore('item', {
+    state: (): ItemState => ({
         items: [],
         loading: false,
         errorMessage: "",
+        pagination: {
+            current_page: 1,
+            last_page: 1,
+            per_page: 5,
+            total: 0
+        }
     }),
 
     getters: {
         getItems: (state): Item[] => state.items,
         getLoading: (state): boolean => state.loading,
         getErrorMessage: (state): string => state.errorMessage,
-        getItemsCount: (state): number => state.items.length,
+        getItemsCount: (state): number => state.pagination.total,
+        getPagination: (state): PaginationInfo => state.pagination,
+        hasNextPage: (state): boolean => state.pagination.current_page < state.pagination.last_page,
+        hasPrevPage: (state): boolean => state.pagination.current_page > 1,
         getItemById: (state) => (id: number): Item | undefined => {
             return state.items.find(item => item.id === id);
-        },
-        getItemsByCategoryId: (state) => (categoryId: number): Item[] => {
-            return state.items.filter(item => item.category_id === categoryId);
         }
     },
 
     actions: {
-        async fetchItems(): Promise<void> {
+        async fetchItems(page: number = 1, perPage: number = 5): Promise<void> {
             this.loading = true;
             this.errorMessage = "";
 
             try {
-                const response: AxiosResponse<Item[]> = await axios.get(
-                    'http://127.0.0.1:8000/api/items'
+                const response: AxiosResponse = await axios.get(
+                    backendUrl + '/items',
+                    {
+                        params: {
+                            page: page,
+                            perpage: perPage
+                        }
+                    }
                 );
 
-                this.items = response.data;
+                // Если используете встроенную пагинацию Laravel
+                if (response.data.data) {
+                    this.items = response.data.data;
+                    this.pagination = {
+                        current_page: response.data.current_page,
+                        last_page: response.data.last_page,
+                        per_page: response.data.per_page,
+                        total: response.data.total
+                    };
+                } else {
+                    // Если используете кастомную пагинацию
+                    this.items = response.data.data || response.data;
+                    this.pagination = response.data;
+                }
 
             } catch (error: any) {
                 if (error.response) {
-                    // Сервер ответил с кодом статуса вне диапазона 2xx
                     this.errorMessage = error.response.data.message || 'Ошибка загрузки товаров';
                     console.error('Items fetch error:', error.response.data);
                 } else if (error.request) {
-                    // Запрос был сделан, но ответ не получен
                     this.errorMessage = 'Сервер не отвечает. Проверьте подключение к интернету.';
                     console.error('Network error:', error.message);
                 } else {
-                    // Произошла ошибка при настройке запроса
                     this.errorMessage = 'Произошла непредвиденная ошибка';
                     console.error('Request setup error:', error.message);
                 }
             } finally {
                 this.loading = false;
             }
+        },
+
+        async nextPage(): Promise<void> {
+            if (this.hasNextPage) {
+                await this.fetchItems(this.pagination.current_page + 1, this.pagination.per_page);
+            }
+        },
+
+        async prevPage(): Promise<void> {
+            if (this.hasPrevPage) {
+                await this.fetchItems(this.pagination.current_page - 1, this.pagination.per_page);
+            }
+        },
+
+        async goToPage(page: number): Promise<void> {
+            if (page >= 1 && page <= this.pagination.last_page) {
+                await this.fetchItems(page, this.pagination.per_page);
+            }
+        },
+
+        async changePerPage(perPage: number): Promise<void> {
+            await this.fetchItems(1, perPage);
         },
 
         clearError(): void {
