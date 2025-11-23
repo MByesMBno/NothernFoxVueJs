@@ -6,11 +6,11 @@
         <p class="text-xl text-gray-700">Добавьте новую категорию для handmade изделий</p>
       </div>
 
-      <!-- Форма создания категории -->
+
       <div class="form-container">
         <div class="form-card">
           <form @submit.prevent="handleSubmit" class="space-y-6">
-            <!-- Поле названия категории -->
+
             <div class="form-group">
               <label for="name" class="form-label">
                 <i class="pi pi-tag mr-2"></i>
@@ -28,7 +28,7 @@
               <small v-if="errors.name" class="form-error">{{ errors.name }}</small>
             </div>
 
-            <!-- Поле описания -->
+
             <div class="form-group">
               <label for="description" class="form-label">
                 <i class="pi pi-file-edit mr-2"></i>
@@ -46,7 +46,7 @@
               <small v-if="errors.description" class="form-error">{{ errors.description }}</small>
             </div>
 
-            <!-- Загрузка изображения -->
+
             <div class="form-group">
               <label class="form-label">
                 <i class="pi pi-image mr-2"></i>
@@ -54,7 +54,7 @@
               </label>
 
               <div class="file-upload-container">
-                <!-- Предпросмотр изображения -->
+
                 <div v-if="previewUrl" class="image-preview">
                   <img :src="previewUrl" alt="Предпросмотр" class="preview-image" />
                   <Button
@@ -65,10 +65,10 @@
                     severity="secondary"
                     text
                     rounded
-                  />
+                  >X</Button>
                 </div>
 
-                <!-- Кнопка загрузки -->
+
                 <div v-else class="upload-area" @click="triggerFileInput">
                   <input
                     ref="fileInput"
@@ -81,7 +81,6 @@
                   <div class="upload-content">
                     <i class="pi pi-cloud-upload text-4xl text-blue-500 mb-2"></i>
                     <p class="upload-text">Нажмите для загрузки изображения</p>
-                    <p class="upload-hint">PNG, JPG, JPEG до 10MB</p>
                   </div>
                 </div>
 
@@ -89,7 +88,7 @@
               </div>
             </div>
 
-            <!-- Кнопки действий -->
+
             <div class="form-actions">
               <Button
                 type="button"
@@ -112,14 +111,14 @@
         </div>
       </div>
 
-      <!-- Статус загрузки -->
+
       <div v-if="loading" class="status-card loading-card">
         <i class="pi pi-spin pi-spinner text-2xl mb-4"></i>
         <p>Создание категории...</p>
       </div>
     </div>
 
-    <!-- Toast уведомления -->
+
     <Toast />
   </div>
 </template>
@@ -139,7 +138,7 @@ const toast = useToast();
 const dataStore = useDataStore();
 const fileInput = ref<HTMLInputElement>();
 
-// Состояние формы
+
 const loading = computed(() => dataStore.loading);
 const previewUrl = ref<string>('');
 
@@ -155,12 +154,12 @@ const errors = reactive({
   image: ''
 });
 
-// Валидация формы
+
 const isFormValid = computed(() => {
   return formData.name.trim() && formData.image;
 });
 
-// Обработчик выбора файла
+
 const handleFileSelect = (event: Event) => {
   const target = event.target as HTMLInputElement;
   const file = target.files?.[0];
@@ -187,7 +186,7 @@ const handleFileSelect = (event: Event) => {
   }
 };
 
-// Очистка выбранного изображения
+
 const clearImage = () => {
   formData.image = null;
   previewUrl.value = '';
@@ -352,6 +351,7 @@ const resetForm = () => {
 }
 
 .file-upload-container {
+
   margin-top: 0.5rem;
 }
 
@@ -360,7 +360,10 @@ const resetForm = () => {
 }
 
 .upload-area {
-  border: 2px dashed #d1d5db;
+  display: block;
+  margin: auto;
+  width: 35%;
+  border: 2px solid #4e91f5;
   border-radius: 0.75rem;
   padding: 2rem;
   text-align: center;
@@ -382,12 +385,8 @@ const resetForm = () => {
 }
 
 .upload-text {
-  font-weight: 600;
-  margin-bottom: 0.25rem;
-}
-
-.upload-hint {
-  font-size: 0.875rem;
+  font-size: 0.9rem;
+  font-weight: 750;
 }
 
 .image-preview {
@@ -411,8 +410,9 @@ const resetForm = () => {
   right: 0.5rem;
   background: rgba(239, 68, 68, 0.9) !important;
   color: white !important;
-  width: 2rem;
-  height: 2rem;
+  font-size: 2rem;
+  width: 2.5rem;
+  height: 1rem;
 }
 
 .preview-remove-btn:hover {
