@@ -1,10 +1,10 @@
 version: '3.8'
 
 services:
-  # Laravel (PHP-FPM)
+   # Laravel (PHP-FPM)
   laravel:
     build:
-      context: /var/www/LaravelProject/NothernFox  # ← путь к Laravel
+      context: /var/www/LaravelProject/NothernFox
       dockerfile: /var/www/LaravelProject/NothernFox/Dockerfile
     environment:
       DB_CONNECTION: pgsql
@@ -14,11 +14,13 @@ services:
       DB_USERNAME: admin
       DB_PASSWORD: hektn123
     volumes:
-      - /var/www/LaravelProject/NothernFox:/var/www/html
+      - /var/www/LaravelProject/NothernFox:/var/www/html     # ← путь к Laravel-проекту
+    depends_on:
+      - postgresql-db 
     networks:
       - first-network
 
-  # PostgreSQL
+ # PostgreSQL
   postgresql-db:
     image: postgres:16
     environment:
@@ -26,7 +28,9 @@ services:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: hektn123
     volumes:
-      - pg_/var/lib/postgresql/data
+      - pg_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"   
     networks:
       - first-network
 
@@ -38,7 +42,7 @@ services:
       - "443:443"
     volumes:
       - ./nginx-config:/etc/nginx/conf.d:ro
-      - ./nothern-project/dist:/var/www/frontend:ro
+      - ./nothern-project/dist:/var/www/frontend:ro  
       - ./ssl:/etc/letsencrypt:ro
     depends_on:
       - laravel
@@ -46,8 +50,8 @@ services:
       - first-network
 
 volumes:
-  pg_
+  pg_data:
 
 networks:
   first-network:
-    external: true
+    external: true   # ← используем уже существующую сеть
